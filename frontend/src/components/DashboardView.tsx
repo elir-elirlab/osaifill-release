@@ -1,0 +1,267 @@
+import { useTranslation } from "react-i18next";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from "recharts";
+import { useSettings } from "@/context/SettingsContext";
+
+interface DashboardViewProps {
+  summary: any;
+}
+
+// 役割に応じた固定色
+const COLORS_PROGRESS = ["#10b981", "#3b82f6", "#94a3b8"]; // 実績, 予定(未払), 余り
+const COLORS_CATEGORY = ["#ef4444", "#f59e0b", "#8b5cf6"]; // 固定費, 旅費, その他
+
+export function DashboardView({ summary }: DashboardViewProps) {
+  const { t } = useTranslation();
+  const { displayUnit } = useSettings();
+
+  if (!summary) return null;
+
+  const overallBudgetTotal = summary.budgets.reduce((acc: number, b: any) => acc + b.total_amount, 0);
+  
+  // 円グラフ用のセグメント計算（重なりを排除）
+  const actual = summary.overall_actual_total;
+  // 予定（未払分） = 総予定額 - すでに支払った額
+  const plannedUnpaid = Math.max(0, summary.overall_planned_total);
+  const remaining = Math.max(0, summary.overall_remaining_forecast);
+  
+  const overallData = [
+    { name: t('actual'), value: actual },
+    { name: t('planned_unpaid'), value: plannedUnpaid },
+    { name: t('forecast'), value: remaining }
+  ];
+
+  // 支出構成（予定ベース）
+  const categoryData = [
+    { name: t('categories.fixed'), value: summary.fixed_cost_total },
+    { name: t('categories.travel'), value: summary.travel_planned_total },
+    { name: t('categories.other'), value: summary.other_planned_total }
+  ];
+
+  return (
+    <div className="space-y-10">
+      {/* ビジュアルチャート */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* 全体進捗グラフ */}
+        <div className="bg-card border rounded-xl p-6 shadow-sm">
+          <h3 className="text-ui-tiny font-bold mb-4 border-l-4 border-primary pl-3">{t('dashboard_view.overall_progress')}</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={overallData}
+                  cx="50%" cy="50%"
+                  innerRadius={60} outerRadius={80}
+                  paddingAngle={5} dataKey="value"
+                  animationDuration={800}
+                >
+                  {overallData.map((_, index) => (
+                    <Cell key={`cell-progress-${index}`} fill={COLORS_PROGRESS[index % COLORS_PROGRESS.length]} />
+                  ))}
+                  <Label 
+                    value={`${overallBudgetTotal.toLocaleString()} ${displayUnit}`} 
+                    position="center" 
+                    fill="currentColor"
+                    className="text-ui-tiny font-bold"
+                  />
+                </Pie>
+                <Tooltip formatter={(value: any) => typeof value === 'number' ? `${value.toLocaleString()} ${displayUnit}` : value} />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-around text-ui-tiny mt-4 uppercase font-bold tracking-wider">
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('actual')}</span>
+              <span className="text-green-600">{actual.toLocaleString()} {displayUnit}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('dashboard_view.total_planned')}</span>
+              <span className="text-blue-600">{summary.overall_planned_total.toLocaleString()} {displayUnit}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('forecast')}</span>
+              <span className="text-primary">{remaining.toLocaleString()} {displayUnit}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 支出構成グラフ */}
+        <div className="bg-card border rounded-xl p-6 shadow-sm">
+          <h3 className="text-ui-tiny font-bold mb-4 border-l-4 border-orange-500 pl-3">{t('dashboard_view.expense_structure')}</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  cx="50%" cy="50%"
+                  innerRadius={60} outerRadius={80}
+                  paddingAngle={5} dataKey="value"
+                  animationDuration={800}
+                >
+                  {categoryData.map((_, index) => (
+                    <Cell key={`cell-category-${index}`} fill={COLORS_CATEGORY[index % COLORS_CATEGORY.length]} />
+                  ))}
+                  <Label 
+                    value={`${summary.overall_planned_total.toLocaleString()} ${displayUnit}`} 
+                    position="center" 
+                    fill="currentColor"
+                    className="text-ui-tiny font-bold"
+                  />
+                </Pie>
+                <Tooltip formatter={(value: any) => typeof value === 'number' ? `${value.toLocaleString()} ${displayUnit}` : value} />
+                <Legend verticalAlign="bottom" height={36} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-center text-ui-tiny text-muted-foreground mt-4 font-bold uppercase tracking-widest">
+            {t('dashboard_view.total_planned')}: {summary.overall_planned_total.toLocaleString()} {displayUnit}
+          </p>
+        </div>
+      </div>
+
+      {/* 予算別サマリテーブル */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-1 bg-primary rounded-full"></div>
+          <h3 className="text-ui-base font-bold">{t('dashboard_view.summary_by_budget')}</h3>
+        </div>
+        
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* 実績ベース */}
+          <div className="space-y-4">
+            <h4 className="text-ui-base font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500"></span>
+              {t('dashboard_view.actual_based')}
+            </h4>
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <table className="w-full text-ui-base">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="p-3 text-left">{t('dashboard_view.budget_name')}</th>
+                    <th className="p-3 text-right">{t('dashboard_view.amount_paid')}</th>
+                    <th className="p-3 text-right">{t('dashboard_view.remaining')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {summary.budgets.map((b: any) => (
+                    <tr key={b.budget_id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-medium">{b.name}</td>
+                      <td className="p-3 text-right font-mono text-green-600 font-bold">{b.actual_total.toLocaleString()} {displayUnit}</td>
+                      <td className="p-3 text-right font-mono text-primary">{(b.total_amount - b.actual_total).toLocaleString()} {displayUnit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 予測ベース */}
+          <div className="space-y-4">
+            <h4 className="text-ui-base font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+              {t('dashboard_view.forecast_based')}
+            </h4>
+            <div className="border rounded-lg overflow-hidden bg-card">
+              <table className="w-full text-ui-base">
+                <thead className="bg-muted/50 border-b">
+                  <tr>
+                    <th className="p-3 text-left">{t('dashboard_view.budget_name')}</th>
+                    <th className="p-3 text-right">{t('dashboard_view.planned_amount')}</th>
+                    <th className="p-3 text-right">{t('dashboard_view.remaining_forecast')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {summary.budgets.map((b: any) => (
+                    <tr key={b.budget_id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-medium">{b.name}</td>
+                      <td className="p-3 text-right font-mono text-blue-600 font-bold">{b.planned_total.toLocaleString()} {displayUnit}</td>
+                      <td className="p-3 text-right font-mono text-primary font-bold underline decoration-2">{b.remaining_forecast.toLocaleString()} {displayUnit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 固定費と旅費の分析 */}
+      <div className="grid gap-8 lg:grid-cols-2">
+        <section className="space-y-4">
+          <h3 className="text-ui-base font-bold flex items-center gap-2">
+            <span className="h-6 w-1 bg-red-500 rounded-full"></span>
+            {t('dashboard_view.fixed_cost_analysis')}
+          </h3>
+          <div className="border rounded-lg overflow-hidden bg-card">
+            <table className="w-full text-ui-base">
+              <tbody className="divide-y">
+                <tr>
+                  <td className="p-4 text-muted-foreground">{t('dashboard_view.total_budget_amount')}</td>
+                  <td className="p-4 text-right font-bold">{overallBudgetTotal.toLocaleString()} {displayUnit}</td>
+                </tr>
+                <tr>
+                  <td className="p-4 text-muted-foreground">{t('dashboard_view.total_fixed_costs')}</td>
+                  <td className="p-4 text-right text-destructive font-bold">{summary.fixed_cost_total.toLocaleString()} {displayUnit}</td>
+                </tr>
+                <tr className="bg-accent/10">
+                  <td className="p-4 font-bold">{t('dashboard_view.disposable_income')}</td>
+                  <td className="p-4 text-right font-bold text-primary text-ui-tiny">{(overallBudgetTotal - summary.fixed_cost_total).toLocaleString()} {displayUnit}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <h3 className="text-ui-base font-bold flex items-center gap-2">
+            <span className="h-6 w-1 bg-orange-500 rounded-full"></span>
+            {t('dashboard_view.travel_cost_breakdown')}
+          </h3>
+          <div className="border rounded-lg overflow-hidden bg-card">
+            <table className="w-full text-ui-base">
+              <thead className="bg-muted/50 border-b">
+                <tr>
+                  <th className="p-3 text-left">{t('common.item_name')}</th>
+                  <th className="p-3 text-right">{t('common.amount')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {summary.travel_items.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="p-8 text-center text-muted-foreground">{t('dashboard_view.no_travel_items')}</td>
+                  </tr>
+                ) : (
+                  summary.travel_items.map((item: any) => (
+                    <tr key={item.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3">
+                        <div className="font-medium">{item.item_name}</div>
+                        <div className="text-ui-tiny text-muted-foreground">
+                          {item.member_name || t('dashboard_view.no_member_assigned')} / {
+                            item.status === "書いただけ" ? t('status.written') :
+                            item.status === "見積済み" ? t('status.estimated') :
+                            item.status === "買い物中" ? t('status.shopping') :
+                            item.status === "購入済み" ? t('status.purchased') :
+                            t('status.pending')
+                          }
+                        </div>
+                      </td>
+                      <td className="p-3 text-right font-mono">{item.amount.toLocaleString()} {displayUnit}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+              {summary.travel_items.length > 0 && (
+                <tfoot className="bg-muted/30 border-t font-bold text-primary">
+                  <tr>
+                    <td className="p-3 text-right">{t('dashboard_view.total_travel_costs')}</td>
+                    <td className="p-3 text-right font-mono">{summary.travel_cost_total.toLocaleString()} {displayUnit}</td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
