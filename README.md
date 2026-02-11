@@ -6,6 +6,13 @@
 
 ---
 
+## 📸 Screenshots
+
+![Dashboard](docs/assets/dashboard.png)
+
+
+---
+
 ## 🌟 Key Features
 
 - **Period (Dataset) Management**: Separate your data by year, month, or event. Easily switch between current and archived household data.
@@ -85,6 +92,11 @@ This project is licensed under the [MIT License](./LICENSE).
 # Osaifill (おさいふぃる) - 日本語
 
 複数の予算源（財布）に対し、予定（お買い物リスト）と実績（CSV）を分離管理し、正確な「余り予測」を可視化するマルチソース家計簿アプリです。
+
+## 📸 スクリーンショット
+
+![Dashboard](docs/assets/dashboard.png)
+
 
 ## 🌟 主な機能
 
