@@ -194,6 +194,7 @@ class DashboardSummary(BaseModel):
     overall_planned_total: float
     overall_remaining_forecast: float
     fixed_cost_total: float
+    fixed_cost_planned_total: float
     travel_planned_total: float
     other_planned_total: float
     travel_cost_total: float
