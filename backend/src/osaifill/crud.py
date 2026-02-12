@@ -342,7 +342,7 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
         - overall_planned_total
     )
 
-    travel_purchases = [p for p in all_purchases if p.category == "旅費"]
+    travel_purchases = [p for p in all_purchases if p.category == "旅費" and p.status != "購入しない"]
     travel_cost_total = float(sum(p.amount for p in travel_purchases))
 
     return schemas.DashboardSummary(

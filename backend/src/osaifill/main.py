@@ -264,11 +264,12 @@ async def import_purchases_csv(dataset_id: str, file: UploadFile = File(...), ov
         def normalize_status(val: str) -> str:
             if not val: return "書いただけ"
             v = val.strip().lower()
-            # 内部値: 書いただけ, 見積済み, 買い物中, 購入済み
+            # 内部値: 書いただけ, 見積済み, 買い物中, 購入済み, 購入しない
             if v in ["書いただけ", "提案", "proposal", "written", "draft"]: return "書いただけ"
             if v in ["見積済み", "estimated", "見積済", "estimate"]: return "見積済み"
             if v in ["買い物中", "shopping", "in_progress", "買い物", "shop"]: return "買い物中"
             if v in ["購入済み", "purchased", "done", "購入済", "complete"]: return "購入済み"
+            if v in ["購入しない", "not purchasing", "not_purchasing", "skip", "cancel"]: return "購入しない"
             return "書いただけ"
 
         new_purchases = []
