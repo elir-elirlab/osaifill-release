@@ -45,7 +45,8 @@ const resources = {
         "estimated": "Estimated",
         "shopping": "Shopping",
         "purchased": "Purchased",
-        "pending": "Pending"
+        "pending": "Pending",
+        "not_purchasing": "Not Purchasing"
       },
       "common": {
         "edit": "Edit",
@@ -202,7 +203,8 @@ const resources = {
         "estimated": "見積済み",
         "shopping": "買い物中",
         "purchased": "購入済み",
-        "pending": "保留"
+        "pending": "保留",
+        "not_purchasing": "購入しない"
       },
       "common": {
         "edit": "編集",

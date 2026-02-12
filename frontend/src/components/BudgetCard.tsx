@@ -78,7 +78,7 @@ export function BudgetCard({ budget, onRefresh, onImport, onEditActual, onEdit }
           </span>
         </div>
         
-        <div className="text-2xl font-bold">
+        <div className={`text-2xl font-bold ${budget.remaining_forecast < 0 ? 'text-destructive' : ''}`}>
           {budget.remaining_forecast.toLocaleString()} {displayUnit}
           <span className="text-ui-base font-normal text-muted-foreground ml-2">
             / {budget.total_amount.toLocaleString()} {displayUnit}

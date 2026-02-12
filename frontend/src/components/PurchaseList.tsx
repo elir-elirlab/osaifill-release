@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, ChevronUp, Trash2, CheckCircle2, Circle, Download, Upload, Tag, User, AlertCircle, Settings, FileText, ShoppingCart, Search, Filter, ArrowUpDown } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, CheckCircle2, Circle, Download, Upload, Tag, User, AlertCircle, Settings, FileText, ShoppingCart, Search, Filter, ArrowUpDown, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { purchaseApi } from "@/lib/api";
 import { useSettings } from "@/context/SettingsContext";
@@ -79,7 +79,8 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
       "書いただけ": "見積済み",
       "見積済み": "買い物中",
       "買い物中": "購入済み",
-      "購入済み": "書いただけ"
+      "購入済み": "購入しない",
+      "購入しない": "書いただけ"
     };
     const nextStatus = statusMap[purchase.status] || "書いただけ";
     await purchaseApi.updateStatus(purchase.id, nextStatus);
@@ -117,7 +118,12 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
         p.item_name,
         p.amount,
         p.unit,
-        p.status === "書いただけ" ? t('status.written') : p.status === "見積済み" ? t('status.estimated') : p.status === "買い物中" ? t('status.shopping') : p.status === "購入済み" ? t('status.purchased') : t('status.pending'),
+        p.status === "書いただけ" ? t('status.written') : 
+        p.status === "見積済み" ? t('status.estimated') : 
+        p.status === "買い物中" ? t('status.shopping') : 
+        p.status === "購入済み" ? t('status.purchased') : 
+        p.status === "購入しない" ? t('status.not_purchasing') : 
+        t('status.pending'),
         t(`priority_levels.${p.priority}`),
         p.note || ''
       ];
@@ -192,6 +198,7 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
                   <option value="見積済み">{t('status.estimated')}</option>
                   <option value="買い物中">{t('status.shopping')}</option>
                   <option value="購入済み">{t('status.purchased')}</option>
+                  <option value="購入しない">{t('status.not_purchasing')}</option>
                 </select>
                 <select 
                   className="p-2 rounded-md border bg-background text-ui-small outline-none"
@@ -265,7 +272,7 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
             {sortedItems.map((item) => (
               <div key={item.id} className={cn(
                 "transition-all",
-                (item.status === "購入済み" || item.status === "買い物中") && "bg-muted/20"
+                (item.status === "購入済み" || item.status === "買い物中" || item.status === "購入しない") && "bg-muted/20"
               )}>
                 <div 
                   className="p-4 flex items-center justify-between cursor-pointer hover:bg-accent/30"
@@ -279,18 +286,20 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
                         item.status === "書いただけ" && "text-muted-foreground",
                         item.status === "見積済み" && "text-blue-500",
                         item.status === "買い物中" && "text-orange-500",
-                        item.status === "購入済み" && "text-green-500"
+                        item.status === "購入済み" && "text-green-500",
+                        item.status === "購入しない" && "text-muted-foreground"
                       )}
                     >
                       {item.status === "書いただけ" && <Circle className="h-6 w-6" />}
                       {item.status === "見積済み" && <FileText className="h-6 w-6" />}
                       {item.status === "買い物中" && <ShoppingCart className="h-6 w-6" />}
                       {item.status === "購入済み" && <CheckCircle2 className="h-6 w-6" />}
+                      {item.status === "購入しない" && <XCircle className="h-6 w-6" />}
                     </button>
                     <div className="flex flex-col min-w-0">
                       <span className={cn(
                         "font-medium truncate text-ui-base",
-                        item.status === "購入済み" && "line-through text-muted-foreground"
+                        (item.status === "購入済み" || item.status === "購入しない") && "line-through text-muted-foreground"
                       )}>
                         {item.item_name}
                       </span>
@@ -325,6 +334,7 @@ export function PurchaseList({ purchases, onRefresh, onEdit }: PurchaseListProps
                         item.status === "見積済み" ? t('status.estimated') :
                         item.status === "買い物中" ? t('status.shopping') :
                         item.status === "購入済み" ? t('status.purchased') :
+                        item.status === "購入しない" ? t('status.not_purchasing') :
                         t('status.pending')
                       }</div>
                     </div>

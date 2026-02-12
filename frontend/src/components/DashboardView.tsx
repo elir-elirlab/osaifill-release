@@ -241,6 +241,7 @@ export function DashboardView({ summary }: DashboardViewProps) {
                             item.status === "見積済み" ? t('status.estimated') :
                             item.status === "買い物中" ? t('status.shopping') :
                             item.status === "購入済み" ? t('status.purchased') :
+                            item.status === "購入しない" ? t('status.not_purchasing') :
                             t('status.pending')
                           }
                         </div>
