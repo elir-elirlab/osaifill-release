@@ -32,7 +32,7 @@ export function DashboardView({ summary }: DashboardViewProps) {
 
   // 支出構成（予定ベース）
   const categoryData = [
-    { name: t('categories.fixed'), value: summary.fixed_cost_total },
+    { name: t('categories.fixed'), value: summary.fixed_cost_planned_total },
     { name: t('categories.travel'), value: summary.travel_planned_total },
     { name: t('categories.other'), value: summary.other_planned_total }
   ];
@@ -254,7 +254,7 @@ export function DashboardView({ summary }: DashboardViewProps) {
               {summary.travel_items.length > 0 && (
                 <tfoot className="bg-muted/30 border-t font-bold text-primary">
                   <tr>
-                    <td className="p-3 text-right">{t('dashboard_view.total_travel_costs')}</td>
+                    <td className="p-3 text-left">{t('dashboard_view.total_travel_costs')}</td>
                     <td className="p-3 text-right font-mono">{summary.travel_cost_total.toLocaleString()} {displayUnit}</td>
                   </tr>
                 </tfoot>

@@ -308,7 +308,7 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
         overall_actual_total += float(actual_total)
 
     # 各カテゴリー別の予定額計算（未払分のみ）
-    fixed_cost_total = float(
+    fixed_cost_planned_total = float(
         sum(
             p.amount
             for p in all_purchases
@@ -332,7 +332,16 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
 
     # 全体の予定合計額
     overall_planned_total = (
-        fixed_cost_total + travel_planned_total + other_planned_total
+        fixed_cost_planned_total + travel_planned_total + other_planned_total
+    )
+
+    # 固定費分析用の総額（ステータスに関わらず、ただし「購入しない」は除外）
+    fixed_cost_total = float(
+        sum(
+            p.amount
+            for p in all_purchases
+            if p.category == "固定費" and p.status != "購入しない"
+        )
     )
     
     # 全体の余り予測（全予算の総額 - 全実績 - 全未払予定）
@@ -350,6 +359,7 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
         overall_planned_total=overall_planned_total,
         overall_remaining_forecast=overall_remaining_forecast,
         fixed_cost_total=fixed_cost_total,
+        fixed_cost_planned_total=fixed_cost_planned_total,
         travel_planned_total=travel_planned_total,
         other_planned_total=other_planned_total,
         travel_cost_total=travel_cost_total,
