@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTheme } from "next-themes"
 import "./i18n"
 import { useTranslation } from "react-i18next"
-import { ShoppingBag, Moon, Sun, Plus, Wallet, ShoppingCart, Settings, History, ChevronRight } from "lucide-react"
+import { ShoppingBag, Moon, Sun, Plus, Wallet, ShoppingCart, Settings, History, ChevronRight, ChevronDown } from "lucide-react"
 import { dashboardApi, purchaseApi, budgetApi } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { useDatasets } from "@/context/DatasetContext"
@@ -154,17 +154,24 @@ function App() {
           <div className="flex flex-1 items-center justify-end space-x-2">
             {/* データセット切り替えUI */}
             <div className="relative group">
-              <button className="flex items-center gap-2 bg-accent/50 px-3 py-1.5 rounded-full hover:bg-accent transition-colors max-w-[150px] sm:max-w-none">
+              <button className="flex items-center gap-2 bg-accent/50 px-4 py-2 rounded-full hover:bg-accent transition-colors max-w-[240px] sm:max-w-xs border border-transparent hover:border-primary/20">
                 <History className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-ui-small font-bold truncate">
-                  {activeDataset?.name || "期間を選択"}
+                  {activeDataset?.name || t('dataset.select_period')}
                 </span>
+                <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
-              <div className="absolute right-0 top-full mt-2 w-64 bg-card border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-                <div className="p-2 border-b bg-muted/30">
-                  <div className="text-ui-tiny font-bold text-muted-foreground uppercase tracking-widest px-2 py-1 flex items-center justify-between">
-                    <span>管理期間の選択</span>
-                    <button onClick={() => setShowDatasetForm(true)} className="text-primary hover:underline lowercase font-normal">新規作成</button>
+              <div className="absolute right-0 top-full mt-2 w-80 bg-card border rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                <div className="p-3 border-b bg-muted/30">
+                  <div className="text-ui-tiny font-bold text-muted-foreground uppercase tracking-widest px-1 py-1 flex items-center justify-between">
+                    <span>{t('dataset.manage_periods')}</span>
+                    <button 
+                      onClick={() => setShowDatasetForm(true)} 
+                      className="bg-primary text-primary-foreground px-2 py-1 rounded flex items-center gap-1 hover:opacity-90 transition-opacity normal-case"
+                    >
+                      <Plus className="h-3 w-3" />
+                      {t('dataset.new_period')}
+                    </button>
                   </div>
                 </div>
                 <div className="max-h-80 overflow-y-auto p-1">
@@ -179,7 +186,9 @@ function App() {
                     >
                       <div>
                         <div className={cn("text-ui-base font-bold", activeDatasetId === ds.id ? "text-primary" : "text-foreground")}>{ds.name}</div>
-                        <div className="text-ui-tiny text-muted-foreground">{new Date(ds.created_at).toLocaleDateString()} 作成</div>
+                        <div className="text-ui-tiny text-muted-foreground">
+                          {t('dataset.created_at', { date: new Date(ds.created_at).toLocaleDateString() })}
+                        </div>
                       </div>
                       {activeDatasetId === ds.id && <ChevronRight className="h-4 w-4 text-primary" />}
                     </button>
@@ -241,7 +250,7 @@ function App() {
                       onClick={() => { setEditingBudget(null); setShowBudgetForm(true); }}
                       className="text-primary hover:underline text-ui-base"
                     >
-                      新しい予算を追加する
+                      {t('add_budget')}
                     </button>
                   </div>
                 )}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { purchaseApi, memberApi } from "@/lib/api";
-import { X, Calculator } from "lucide-react";
+import { X, Calculator, AlertTriangle } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
 
 interface PurchaseFormProps {
@@ -82,12 +82,11 @@ export function PurchaseForm({ datasetId, purchase, budgets, onClose, onSuccess 
     setAssignments({ [id]: amount });
   };
 
+  const assignmentSum = selectedBudgets.reduce((sum, id) => sum + (assignments[id] || 0), 0);
+  const isAmountMismatched = Math.abs(assignmentSum - amount) > 0.01;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedBudgets.length === 0) {
-      alert(t('purchase_form.select_budget_error'));
-      return;
-    }
 
     const data = {
       dataset_id: datasetId,
@@ -185,6 +184,14 @@ export function PurchaseForm({ datasetId, purchase, budgets, onClose, onSuccess 
                 </button>
               </div>
               <div className="grid gap-2 overflow-y-auto max-h-[400px] pr-2 text-ui-base">
+                {isAmountMismatched && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md flex items-start gap-2 text-destructive">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="text-ui-small">
+                      <p className="font-bold">{t('purchase_list_view.amount_mismatch', { sum: assignmentSum.toLocaleString(), amount: amount.toLocaleString() })}</p>
+                    </div>
+                  </div>
+                )}
                 {budgets.map((b) => {
                   const bId = b.id || b.budget_id;
                   return (

@@ -48,17 +48,17 @@ export function DatasetForm({ onClose, onSuccess }: DatasetFormProps) {
           <X className="h-5 w-5" />
         </button>
         
-        <h2 className="text-ui-h2 font-bold mb-6">新しい期間（データセット）の作成</h2>
+        <h2 className="text-ui-h2 font-bold mb-6">{t('dataset.create_title')}</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-ui-base font-medium">期間名・表示名</label>
+            <label className="text-ui-base font-medium">{t('dataset.name_label')}</label>
             <input 
               required
               className="w-full p-2 rounded-md border bg-background text-ui-base"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例: 2025年度, 開発フェーズ1 など"
+              placeholder={t('dataset.name_placeholder')}
               autoFocus
             />
           </div>
@@ -66,18 +66,18 @@ export function DatasetForm({ onClose, onSuccess }: DatasetFormProps) {
           <div className="space-y-4 border-t pt-4">
             <h3 className="text-ui-base font-bold flex items-center gap-2">
               <Copy className="h-4 w-4" />
-              データの引き継ぎオプション
+              {t('dataset.carry_over_options')}
             </h3>
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-ui-small text-muted-foreground">引き継ぎ元</label>
+                <label className="text-ui-small text-muted-foreground">{t('dataset.source_label')}</label>
                 <select 
                   className="p-1 text-ui-small rounded border bg-background"
                   value={sourceId || ""}
                   onChange={(e) => setSourceId(e.target.value || null)}
                 >
-                  <option value="">（引き継がない）</option>
+                  <option value="">{t('dataset.no_carry_over')}</option>
                   {datasets.map(ds => (
                     <option key={ds.id} value={ds.id}>{ds.name}</option>
                   ))}
@@ -89,21 +89,21 @@ export function DatasetForm({ onClose, onSuccess }: DatasetFormProps) {
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input type="checkbox" checked={carryMembers} onChange={e => setCarryMembers(e.target.checked)} className="h-4 w-4" />
                     <span className="text-ui-base group-hover:text-primary transition-colors flex items-center gap-2">
-                      <Users className="h-3.5 w-3.5" /> メンバーリストを引き継ぐ
+                      <Users className="h-3.5 w-3.5" /> {t('dataset.carry_members')}
                     </span>
                   </label>
                   
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input type="checkbox" checked={carrySettings} onChange={e => setCarrySettings(e.target.checked)} className="h-4 w-4" />
                     <span className="text-ui-base group-hover:text-primary transition-colors flex items-center gap-2">
-                      <SettingsIcon className="h-3.5 w-3.5" /> CSVマッピング設定を引き継ぐ
+                      <SettingsIcon className="h-3.5 w-3.5" /> {t('dataset.carry_settings')}
                     </span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer group">
                     <input type="checkbox" checked={carryBudget} onChange={e => setCarryBudget(e.target.checked)} className="h-4 w-4" />
                     <span className="text-ui-base group-hover:text-primary transition-colors flex items-center gap-2">
-                      <Wallet className="h-3.5 w-3.5" /> 余った予算をまとめて引き継ぐ
+                      <Wallet className="h-3.5 w-3.5" /> {t('dataset.carry_budget')}
                     </span>
                   </label>
                 </div>
@@ -116,7 +116,7 @@ export function DatasetForm({ onClose, onSuccess }: DatasetFormProps) {
             disabled={isSubmitting}
             className="w-full bg-primary text-primary-foreground p-3 rounded-md font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isSubmitting ? "作成中..." : "データセットを作成する"}
+            {isSubmitting ? t('dataset.creating') : t('dataset.create_button')}
           </button>
         </form>
       </div>
