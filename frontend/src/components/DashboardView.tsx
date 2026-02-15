@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from "recharts";
 import { useSettings } from "@/context/SettingsContext";
+import { AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DashboardViewProps {
   summary: any;
@@ -13,6 +15,7 @@ const COLORS_CATEGORY = ["#ef4444", "#f59e0b", "#8b5cf6"]; // 固定費, 旅費,
 export function DashboardView({ summary }: DashboardViewProps) {
   const { t } = useTranslation();
   const { displayUnit } = useSettings();
+  const hideBanner = import.meta.env.VITE_HIDE_UNASSIGNED_BANNER === "true";
 
   if (!summary) return null;
 
@@ -20,8 +23,9 @@ export function DashboardView({ summary }: DashboardViewProps) {
   
   // 円グラフ用のセグメント計算（重なりを排除）
   const actual = summary.overall_actual_total;
-  // 予定（未払分） = 総予定額 - すでに支払った額
+  // 予定（未払分） = 総予定額
   const plannedUnpaid = Math.max(0, summary.overall_planned_total);
+  const unassigned = summary.unassigned_planned_total || 0;
   const remaining = Math.max(0, summary.overall_remaining_forecast);
   
   const overallData = [
@@ -39,6 +43,23 @@ export function DashboardView({ summary }: DashboardViewProps) {
 
   return (
     <div className="space-y-10">
+      {/* 警告バナー */}
+      {unassigned > 0 && !hideBanner && (
+        <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="bg-destructive text-destructive-foreground p-2 rounded-full shrink-0">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-ui-base font-bold text-destructive">
+              {t('purchase_list_view.unassigned_warning', { 
+                amount: unassigned.toLocaleString(), 
+                unit: displayUnit 
+              })}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ビジュアルチャート */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* 全体進捗グラフ */}
@@ -80,7 +101,13 @@ export function DashboardView({ summary }: DashboardViewProps) {
             </div>
             <div className="flex flex-col items-center">
               <span className="text-muted-foreground">{t('forecast')}</span>
-              <span className="text-primary">{remaining.toLocaleString()} {displayUnit}</span>
+              <span className={cn(
+                "flex items-center gap-1 font-bold",
+                summary.overall_remaining_forecast <= 0 ? "text-destructive" : "text-primary"
+              )}>
+                {summary.overall_remaining_forecast <= 0 && <AlertTriangle className="h-3.5 w-3.5" />}
+                {summary.overall_remaining_forecast.toLocaleString()} {displayUnit}
+              </span>
             </div>
           </div>
         </div>
@@ -113,9 +140,20 @@ export function DashboardView({ summary }: DashboardViewProps) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <p className="text-center text-ui-tiny text-muted-foreground mt-4 font-bold uppercase tracking-widest">
-            {t('dashboard_view.total_planned')}: {summary.overall_planned_total.toLocaleString()} {displayUnit}
-          </p>
+          <div className="flex justify-around text-ui-tiny mt-4 uppercase font-bold tracking-wider">
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('categories.fixed')}</span>
+              <span className="text-red-600">{summary.fixed_cost_planned_total.toLocaleString()} {displayUnit}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('categories.travel')}</span>
+              <span className="text-orange-600">{summary.travel_planned_total.toLocaleString()} {displayUnit}</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-muted-foreground">{t('categories.other')}</span>
+              <span className="text-purple-600">{summary.other_planned_total.toLocaleString()} {displayUnit}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -178,6 +216,13 @@ export function DashboardView({ summary }: DashboardViewProps) {
                       <td className="p-3 text-right font-mono text-primary font-bold underline decoration-2">{b.remaining_forecast.toLocaleString()} {displayUnit}</td>
                     </tr>
                   ))}
+                  {unassigned > 0 && (
+                    <tr className="bg-destructive/5 hover:bg-destructive/10 transition-colors">
+                      <td className="p-3 font-medium text-destructive">{t('purchase_list_view.unassigned_amount')}</td>
+                      <td className="p-3 text-right font-mono text-destructive font-bold">{unassigned.toLocaleString()} {displayUnit}</td>
+                      <td className="p-3 text-right font-mono text-muted-foreground">-</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

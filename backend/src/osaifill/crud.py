@@ -335,6 +335,15 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
         fixed_cost_planned_total + travel_planned_total + other_planned_total
     )
 
+    # 未割当の予定額計算
+    unassigned_planned_total = float(
+        sum(
+            max(0.0, p.amount - sum(asgn.amount for asgn in p.assignments))
+            for p in all_purchases
+            if p.status in ["書いただけ", "見積済み"]
+        )
+    )
+
     # 固定費分析用の総額（ステータスに関わらず、ただし「購入しない」は除外）
     fixed_cost_total = float(
         sum(
@@ -358,6 +367,7 @@ def get_dashboard_summary(db: Session, dataset_id: str) -> schemas.DashboardSumm
         overall_actual_total=overall_actual_total,
         overall_planned_total=overall_planned_total,
         overall_remaining_forecast=overall_remaining_forecast,
+        unassigned_planned_total=unassigned_planned_total,
         fixed_cost_total=fixed_cost_total,
         fixed_cost_planned_total=fixed_cost_planned_total,
         travel_planned_total=travel_planned_total,
