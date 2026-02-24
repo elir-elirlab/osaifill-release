@@ -3,6 +3,7 @@ name: DCO Check
 on:
   pull_request:
     branches: [ main, master ]
+  # push時もチェックしたい場合は残しますが、基本はPR時だけで十分です
   push:
     branches: [ main, master ]
 
@@ -13,11 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # すべての履歴を取得しないと過去のコミットの署名をチェックできないため
+          # 履歴をすべて取得して署名を正しく検証できるようにする
           fetch-depth: 0
 
       - name: DCO Check
-        uses: alex-page/github-app-dco-action@v1.0.0
+        # 代替の信頼性の高いアクション
+        uses: dcodev/dco-check@v1
         with:
-          # PR内のすべてのコミットをチェック対象にする
-          validate_all_commits: true
+          # PRのすべてのコミットをチェックする
+          all_commits: true
+          
