@@ -1,0 +1,23 @@
+name: DCO Check
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  dco_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # すべての履歴を取得しないと過去のコミットの署名をチェックできないため
+          fetch-depth: 0
+
+      - name: DCO Check
+        uses: alex-page/github-app-dco-action@v1.0.0
+        with:
+          # PR内のすべてのコミットをチェック対象にする
+          validate_all_commits: true

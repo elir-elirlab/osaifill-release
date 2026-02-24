@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    container_name: osaifill-backend
+    env_file: .env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/osaifill.db
+    volumes:
+      - ./backend:/app/data
+    restart: always
+    # No ports exposed to host - only internal access
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-/api}
+    container_name: osaifill-frontend
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - backend
+    restart: always
+
+# 名前付きボリュームは不要

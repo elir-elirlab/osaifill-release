@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osaifill"
+version = "0.1.0"
+description = "Multi-source budget management app"
+readme = "README.md"
+authors = [
+    { name = "elir" }
+]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy",
+    "pydantic",
+    "python-multipart",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+    "mypy",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
